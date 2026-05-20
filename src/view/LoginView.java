@@ -4,6 +4,7 @@ import pojo.User;
 import service.AuthService;
 import service.UserService;
 import view.utils.ConsoleUtils;
+import tools.DataInitializer;
 
 public class LoginView {
 
@@ -11,6 +12,7 @@ public class LoginView {
     private static final UserService userService = new UserService();
 
     public static void main(String[] args) {
+        DataInitializer.init();
         start();
     }
 
