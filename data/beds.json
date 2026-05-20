@@ -1,0 +1,43 @@
+[ {
+  "id" : 1,
+  "roomNo" : 101,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "A床",
+  "isDeleted" : false
+}, {
+  "id" : 2,
+  "roomNo" : 101,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "B床",
+  "isDeleted" : false
+}, {
+  "id" : 3,
+  "roomNo" : 102,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "A床",
+  "isDeleted" : false
+}, {
+  "id" : 4,
+  "roomNo" : 201,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "A床",
+  "isDeleted" : false
+}, {
+  "id" : 5,
+  "roomNo" : 202,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "A床",
+  "isDeleted" : false
+}, {
+  "id" : 6,
+  "roomNo" : 202,
+  "bedStatus" : 1,
+  "remarks" : "",
+  "bedNo" : "B床",
+  "isDeleted" : false
+} ]

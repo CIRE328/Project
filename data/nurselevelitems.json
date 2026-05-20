@@ -1,0 +1,16 @@
+[ {
+  "id" : 1,
+  "levelId" : 1,
+  "itemId" : 1,
+  "isDeleted" : false
+}, {
+  "id" : 2,
+  "levelId" : 1,
+  "itemId" : 2,
+  "isDeleted" : false
+}, {
+  "id" : 3,
+  "levelId" : 2,
+  "itemId" : 1,
+  "isDeleted" : false
+} ]

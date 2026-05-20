@@ -1,0 +1,21 @@
+[ {
+  "id" : 1,
+  "roomFloor" : "1F",
+  "roomNo" : 101,
+  "isDeleted" : false
+}, {
+  "id" : 2,
+  "roomFloor" : "1F",
+  "roomNo" : 102,
+  "isDeleted" : false
+}, {
+  "id" : 3,
+  "roomFloor" : "2F",
+  "roomNo" : 201,
+  "isDeleted" : false
+}, {
+  "id" : 4,
+  "roomFloor" : "2F",
+  "roomNo" : 202,
+  "isDeleted" : false
+} ]

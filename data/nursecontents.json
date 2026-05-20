@@ -1,0 +1,31 @@
+[ {
+  "id" : 1,
+  "serialNumber" : "HL001",
+  "nursingName" : "翻身拍背",
+  "servicePrice" : "20",
+  "message" : "预防压疮",
+  "status" : 1,
+  "executionCycle" : "每天",
+  "executionTimes" : "2次",
+  "isDeleted" : false
+}, {
+  "id" : 2,
+  "serialNumber" : "HL002",
+  "nursingName" : "协助洗浴",
+  "servicePrice" : "50",
+  "message" : "",
+  "status" : 1,
+  "executionCycle" : "每周",
+  "executionTimes" : "2次",
+  "isDeleted" : false
+}, {
+  "id" : 3,
+  "serialNumber" : "HL003",
+  "nursingName" : "喂饭",
+  "servicePrice" : "30",
+  "message" : "",
+  "status" : 1,
+  "executionCycle" : "每天",
+  "executionTimes" : "3次",
+  "isDeleted" : false
+} ]

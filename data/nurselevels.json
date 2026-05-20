@@ -1,0 +1,11 @@
+[ {
+  "id" : 1,
+  "levelName" : "一级护理",
+  "levelStatus" : 1,
+  "isDeleted" : false
+}, {
+  "id" : 2,
+  "levelName" : "二级护理",
+  "levelStatus" : 1,
+  "isDeleted" : false
+} ]
