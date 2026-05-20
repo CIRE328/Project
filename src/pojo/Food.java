@@ -7,18 +7,20 @@ public class Food {
     private String foodName;
     private String foodType;
     private BigDecimal price;
-    private Integer isHalal;   // 是否清真
+    private Integer isHalal;
     private String foodImg;
+    private Boolean isDeleted;
 
     public Food() {}
 
-    public Food(Integer id, String foodName, String foodType, BigDecimal price, Integer isHalal, String foodImg) {
+    public Food(Integer id, String foodName, String foodType, BigDecimal price, Integer isHalal, String foodImg, Boolean isDeleted) {
         this.id = id;
         this.foodName = foodName;
         this.foodType = foodType;
         this.price = price;
         this.isHalal = isHalal;
         this.foodImg = foodImg;
+        this.isDeleted = isDeleted;
     }
 
     public Integer getId() { return id; }
@@ -33,6 +35,8 @@ public class Food {
     public void setIsHalal(Integer isHalal) { this.isHalal = isHalal; }
     public String getFoodImg() { return foodImg; }
     public void setFoodImg(String foodImg) { this.foodImg = foodImg; }
+    public Boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
 
     @Override
     public String toString() {
@@ -43,6 +47,7 @@ public class Food {
                 ", price=" + price +
                 ", isHalal=" + isHalal +
                 ", foodImg='" + foodImg + '\'' +
+                ", isDeleted=" + isDeleted +
                 '}';
     }
 }

@@ -7,16 +7,18 @@ public class Menu {
     private String icon;
     private String path;
     private Integer parentId;
+    private Boolean isDeleted;
 
     public Menu() {}
 
-    public Menu(Integer id, String menusIndex, String title, String icon, String path, Integer parentId) {
+    public Menu(Integer id, String menusIndex, String title, String icon, String path, Integer parentId, Boolean isDeleted) {
         this.id = id;
         this.menusIndex = menusIndex;
         this.title = title;
         this.icon = icon;
         this.path = path;
         this.parentId = parentId;
+        this.isDeleted = isDeleted;
     }
 
     public Integer getId() { return id; }
@@ -31,6 +33,8 @@ public class Menu {
     public void setPath(String path) { this.path = path; }
     public Integer getParentId() { return parentId; }
     public void setParentId(Integer parentId) { this.parentId = parentId; }
+    public Boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(Boolean isDeleted) { this.isDeleted = isDeleted; }
 
     @Override
     public String toString() {
@@ -41,6 +45,7 @@ public class Menu {
                 ", icon='" + icon + '\'' +
                 ", path='" + path + '\'' +
                 ", parentId=" + parentId +
+                ", isDeleted=" + isDeleted +
                 '}';
     }
 }
