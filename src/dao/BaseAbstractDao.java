@@ -1,33 +1,50 @@
 package dao;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.io.*;
-import java.lang.reflect.Field;
-import tools.JsonFileUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 抽象 DAO 基类，提供基于 JSON 文件的通用 CRUD 实现
- * @param <T>  实体类型（必须有 Integer 类型的 id 字段和 Boolean/Integer 类型的 isDeleted 字段）
+ * 内部使用配置好的 ObjectMapper 支持 Java 8 时间类型
+ *
+ * @param <T> 实体类型（必须有 Integer id 和 Boolean isDeleted）
  */
+public abstract class BaseAbstractDao<T> implements BaseDao<T, Integer> {
 
-public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
+    // 配置 ObjectMapper：支持 LocalDate/LocalDateTime，禁用时间戳格式
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    private static final String DATA_DIR = "data/";
 
     private final String filePath;
     private final Class<T> clazz;
-    private final ObjectMapper mapper;
 
     /**
      * 构造函数
+     *
      * @param fileName JSON 文件名（如 "customers.json"）
      * @param clazz    实体类的 Class 对象
      */
     public BaseAbstractDao(String fileName, Class<T> clazz) {
-        this.filePath = "data/" + fileName;
+        this.filePath = DATA_DIR + fileName;
         this.clazz = clazz;
-        this.mapper = JsonFileUtil.getObjectMapper(); // 需要在 JsonFileUtil 中暴露 mapper 对象
+        // 确保 data 目录存在
+        File dir = new File(DATA_DIR);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
     }
 
     // ========== 文件读写基础方法 ==========
@@ -41,9 +58,9 @@ public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
             return new ArrayList<>();
         }
         try {
-            CollectionType listType = mapper.getTypeFactory()
+            CollectionType listType = MAPPER.getTypeFactory()
                     .constructCollectionType(ArrayList.class, clazz);
-            return mapper.readValue(file, listType);
+            return MAPPER.readValue(file, listType);
         } catch (IOException e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -56,16 +73,15 @@ public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
     protected void writeAll(List<T> list) {
         File file = new File(filePath);
         try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, list);
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, list);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * 生成下一个可用的 ID（取当前最大 id + 1）
-     */
-    protected Integer generateNextId(List<T> list) {
+    // ========== 反射操作 id 和 isDeleted 字段 ==========
+
+    private Integer generateNextId(List<T> list) {
         int maxId = 0;
         for (T entity : list) {
             try {
@@ -76,16 +92,13 @@ public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
                     maxId = id;
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
+                // 忽略，实体可能没有 id 字段（但根据规范应该有）
             }
         }
         return maxId + 1;
     }
 
-    /**
-     * 设置实体的 id 字段值
-     */
-    protected void setId(T entity, Integer id) {
+    private void setId(T entity, Integer id) {
         try {
             Field idField = clazz.getDeclaredField("id");
             idField.setAccessible(true);
@@ -95,10 +108,7 @@ public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
         }
     }
 
-    /**
-     * 获取实体的 id 值
-     */
-    protected Integer getId(T entity) {
+    private Integer getId(T entity) {
         try {
             Field idField = clazz.getDeclaredField("id");
             idField.setAccessible(true);
@@ -109,35 +119,27 @@ public class BaseAbstractDao<T> implements BaseDao<T, Integer> {
         }
     }
 
-    /**
-     * 获取实体的 isDeleted 字段值（假设字段类型为 Boolean）
-     * 如果字段是 Integer（0/1），需子类重写或修改此处逻辑
-     */
-    protected boolean getIsDeleted(T entity) {
+    private boolean getIsDeleted(T entity) {
         try {
-            Field deletedField = clazz.getDeclaredField("isDeleted");
-            deletedField.setAccessible(true);
-            Object value = deletedField.get(entity);
+            Field field = clazz.getDeclaredField("isDeleted");
+            field.setAccessible(true);
+            Object value = field.get(entity);
             if (value instanceof Boolean) {
                 return (Boolean) value;
             } else if (value instanceof Integer) {
                 return (Integer) value == 1;
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            // 如果没有 isDeleted 字段，认为未删除
-            return false;
+            // 没有 isDeleted 字段，视为未删除
         }
         return false;
     }
 
-    /**
-     * 设置实体的 isDeleted 字段值（Boolean 类型）
-     */
-    protected void setIsDeleted(T entity, boolean deleted) {
+    private void setIsDeleted(T entity, boolean deleted) {
         try {
-            Field deletedField = clazz.getDeclaredField("isDeleted");
-            deletedField.setAccessible(true);
-            deletedField.set(entity, deleted);
+            Field field = clazz.getDeclaredField("isDeleted");
+            field.setAccessible(true);
+            field.set(entity, deleted);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
