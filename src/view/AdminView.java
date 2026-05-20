@@ -349,28 +349,80 @@ public class AdminView {
         ConsoleUtils.printSubTitle("客户护理设置");
         Integer customerId = ConsoleUtils.readInt("客户ID: ");
         Optional<Customer> opt = customerService.findCustomerById(customerId);
-        if (opt.isEmpty()) { System.out.println("客户不存在"); return; }
+        if (opt.isEmpty()) {
+            System.out.println("客户不存在");
+            return;
+        }
+        Customer customer = opt.get();
+        System.out.println("当前客户：" + customer.getCustomerName());
         System.out.println("1. 设置护理级别");
         System.out.println("2. 移除护理级别");
         System.out.println("3. 购买护理项目");
+        System.out.println("4. 续费护理项目");
+        System.out.println("5. 移除护理项目");
         int choice = ConsoleUtils.readInt("请选择: ");
-        if (choice == 1) {
-            System.out.println("可用护理级别:");
-            nurseService.findAllNurseLevels().forEach(l -> System.out.println(l.getId() + " " + l.getLevelName()));
-            Integer levelId = ConsoleUtils.readInt("级别ID: ");
-            boolean success = nurseService.setCustomerLevel(customerId, levelId);
-            System.out.println(success ? "设置成功" : "设置失败，可能已有级别");
-        } else if (choice == 2) {
-            boolean success = nurseService.removeCustomerLevel(customerId);
-            System.out.println(success ? "移除成功" : "移除失败");
-        } else if (choice == 3) {
-            System.out.println("可用护理项目:");
-            nurseService.findAllNurseContents().forEach(c -> System.out.println(c.getId() + " " + c.getNursingName() + " 价格:" + c.getServicePrice()));
-            Integer itemId = ConsoleUtils.readInt("项目ID: ");
-            int quantity = ConsoleUtils.readInt("购买数量: ");
-            LocalDate maturity = ConsoleUtils.readDate("到期日期");
-            boolean success = nurseService.purchaseNurseItem(customerId, itemId, quantity, maturity);
-            System.out.println(success ? "购买成功" : "购买失败");
+        switch (choice) {
+            case 1:
+                System.out.println("可用护理级别:");
+                nurseService.findAllNurseLevels().forEach(l -> System.out.println(l.getId() + " " + l.getLevelName()));
+                Integer levelId = ConsoleUtils.readInt("级别ID: ");
+                boolean setSuccess = nurseService.setCustomerLevel(customerId, levelId);
+                System.out.println(setSuccess ? "设置成功" : "设置失败，可能已有级别或级别ID无效");
+                break;
+            case 2:
+                boolean removeLevelSuccess = nurseService.removeCustomerLevel(customerId);
+                System.out.println(removeLevelSuccess ? "移除成功" : "移除失败");
+                break;
+            case 3:
+                System.out.println("可用护理项目:");
+                nurseService.findAllNurseContents().forEach(c -> System.out.println(c.getId() + " " + c.getNursingName() + " 价格:" + c.getServicePrice()));
+                Integer itemId = ConsoleUtils.readInt("项目ID: ");
+                int quantity = ConsoleUtils.readInt("购买数量: ");
+                LocalDate maturity = ConsoleUtils.readDate("到期日期");
+                boolean purchaseSuccess = nurseService.purchaseNurseItem(customerId, itemId, quantity, maturity);
+                System.out.println(purchaseSuccess ? "购买成功" : "购买失败");
+                break;
+            case 4:
+                // 续费：先展示客户已有的护理项目
+                List<CustomerNurseItem> items = nurseService.getCustomerNurseItems(customerId);
+                if (items.isEmpty()) {
+                    System.out.println("该客户没有购买任何护理项目，请先购买");
+                    break;
+                }
+                System.out.println("客户已有的护理项目：");
+                for (CustomerNurseItem cni : items) {
+                    Optional<NurseContent> content = nurseService.findAllNurseContents().stream()
+                            .filter(c -> c.getId().equals(cni.getItemId())).findFirst();
+                    String name = content.map(NurseContent::getNursingName).orElse("未知");
+                    System.out.println("条目ID:" + cni.getId() + " 项目:" + name +
+                            " 剩余次数:" + cni.getNurseNumber() + " 到期:" + cni.getMaturityTime());
+                }
+                Integer cniId = ConsoleUtils.readInt("请选择要续费的条目ID: ");
+                int addQuantity = ConsoleUtils.readInt("增加次数: ");
+                LocalDate newMaturity = ConsoleUtils.readDate("新到期日期 (直接回车不变): ");
+                boolean renewSuccess = nurseService.renewNurseItem(cniId, addQuantity, newMaturity);
+                System.out.println(renewSuccess ? "续费成功" : "续费失败");
+                break;
+            case 5:
+                // 移除护理项目
+                List<CustomerNurseItem> items2 = nurseService.getCustomerNurseItems(customerId);
+                if (items2.isEmpty()) {
+                    System.out.println("该客户没有购买任何护理项目");
+                    break;
+                }
+                System.out.println("客户已有的护理项目：");
+                for (CustomerNurseItem cni : items2) {
+                    Optional<NurseContent> content = nurseService.findAllNurseContents().stream()
+                            .filter(c -> c.getId().equals(cni.getItemId())).findFirst();
+                    String name = content.map(NurseContent::getNursingName).orElse("未知");
+                    System.out.println("条目ID:" + cni.getId() + " 项目:" + name);
+                }
+                Integer removeId = ConsoleUtils.readInt("请选择要移除的条目ID: ");
+                boolean removeSuccess = nurseService.removeCustomerNurseItem(removeId);
+                System.out.println(removeSuccess ? "移除成功" : "移除失败");
+                break;
+            default:
+                System.out.println("无效选项");
         }
     }
 
