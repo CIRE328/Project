@@ -55,4 +55,8 @@ public class JsonFileUtil {
             e.printStackTrace(); // 打印异常堆栈信息，便于定位问题
         }
     }
+
+    public static ObjectMapper getObjectMapper() {
+        return mapper;
+    }
 }
