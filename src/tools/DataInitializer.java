@@ -43,41 +43,109 @@ public class DataInitializer {
     };
 
     public static void init() {
-        // 1. 创建 data 目录
         File dir = new File(DATA_DIR);
-        if (!dir.exists()) {
-            boolean created = dir.mkdirs();
-            if (created) {
-                System.out.println("创建 data 目录: " + dir.getAbsolutePath());
-            } else {
-                System.err.println("无法创建 data 目录，请检查权限");
-                return;
-            }
-        }
+        if (!dir.exists()) dir.mkdirs();
 
-        // 2. 初始化每个 JSON 文件
         for (String[] fileInfo : FILES) {
             String fileName = fileInfo[0];
             String className = fileInfo[1];
             File file = new File(DATA_DIR + fileName);
-            if (!file.exists() || file.length() == 0) {
-                // 文件不存在或为空，创建默认数据
+            boolean needCreate = !file.exists() || file.length() == 0;
+            if (!needCreate) {
+                // 尝试读取，如果读取失败也重新创建
+                try {
+                    CollectionType listType = MAPPER.getTypeFactory()
+                            .constructCollectionType(ArrayList.class, Class.forName(className));
+                    MAPPER.readValue(file, listType);
+                } catch (Exception e) {
+                    System.out.println("文件 " + fileName + " 损坏，将重新生成");
+                    needCreate = true;
+                }
+            }
+            if (needCreate) {
                 createDefaultFile(fileName, className);
             }
         }
-        System.out.println("数据初始化完成。");
+    }
+
+    private static String getDefaultJsonContent(String fileName) {
+        switch (fileName) {
+            case "users.json":
+                return """
+[
+  {
+    "id": 1,
+    "nickname": "系统管理员",
+    "username": "admin",
+    "password": "admin",
+    "sex": 1,
+    "email": "admin@example.com",
+    "phoneNumber": "13800000000",
+    "roleId": 1,
+    "createTime": "2025-01-01T00:00:00",
+    "createBy": 1,
+    "updateTime": "2025-01-01T00:00:00",
+    "updateBy": 1,
+    "isDeleted": false
+  }
+]
+""";
+            case "rooms.json":
+                return """
+[
+  {"id": 1, "roomFloor": "1F", "roomNo": 101, "isDeleted": false},
+  {"id": 2, "roomFloor": "1F", "roomNo": 102, "isDeleted": false},
+  {"id": 3, "roomFloor": "2F", "roomNo": 201, "isDeleted": false}
+]
+""";
+            case "beds.json":
+                return """
+[
+  {"id": 1, "roomNo": 101, "bedNo": "A床", "bedStatus": 1, "remarks": "", "isDeleted": false},
+  {"id": 2, "roomNo": 101, "bedNo": "B床", "bedStatus": 1, "remarks": "", "isDeleted": false},
+  {"id": 3, "roomNo": 102, "bedNo": "A床", "bedStatus": 1, "remarks": "", "isDeleted": false},
+  {"id": 4, "roomNo": 201, "bedNo": "A床", "bedStatus": 1, "remarks": "", "isDeleted": false}
+]
+""";
+            case "nursecontents.json":
+                return """
+[
+  {"id": 1, "serialNumber": "HL001", "nursingName": "翻身拍背", "servicePrice": "20", "message": "", "status": 1, "executionCycle": "每天", "executionTimes": "2次", "isDeleted": false},
+  {"id": 2, "serialNumber": "HL002", "nursingName": "协助洗浴", "servicePrice": "50", "message": "", "status": 1, "executionCycle": "每周", "executionTimes": "2次", "isDeleted": false}
+]
+""";
+            case "nurselevels.json":
+                return """
+[
+  {"id": 1, "levelName": "一级护理", "levelStatus": 1, "isDeleted": false},
+  {"id": 2, "levelName": "二级护理", "levelStatus": 1, "isDeleted": false}
+]
+""";
+            case "nurselevelitems.json":
+                return """
+[
+  {"id": 1, "levelId": 1, "itemId": 1, "isDeleted": false},
+  {"id": 2, "levelId": 1, "itemId": 2, "isDeleted": false},
+  {"id": 3, "levelId": 2, "itemId": 1, "isDeleted": false}
+]
+""";
+            // 其他所有文件默认为空数组
+            default:
+                return "[]";
+        }
     }
 
     @SuppressWarnings("unchecked")
     private static void createDefaultFile(String fileName, String className) {
         File file = new File(DATA_DIR + fileName);
-        List<?> defaultData = getDefaultData(fileName, className);
+        String jsonContent = getDefaultJsonContent(fileName);
+        if (jsonContent == null) {
+            jsonContent = "[]"; // 默认空数组
+        }
         try {
-            CollectionType listType = MAPPER.getTypeFactory()
-                    .constructCollectionType(ArrayList.class, Class.forName(className));
-            MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, defaultData);
+            java.nio.file.Files.write(file.toPath(), jsonContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             System.out.println("已创建默认文件: " + fileName);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.err.println("创建文件失败: " + fileName);
             e.printStackTrace();
         }
